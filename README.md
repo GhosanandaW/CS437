@@ -1,2 +1,2 @@
-# CS437
-CS437 IoT Codebase
+# CS437 IoT
+CS437 IoT Codebase, created by Ghosananda Wijaya
