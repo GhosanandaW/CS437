@@ -7,7 +7,12 @@ px = Picarx()
 
 #init line reference
 # px.set_line_reference([432.0, 493.0, 385.0])
-px.set_line_reference([830, 850, 830])
+# px.set_line_reference([830, 850, 830])
+# px.set_line_reference([820, 850, 820])
+# px.set_line_reference([800,800,800])
+px.set_line_reference([900, 900, 900])
+
+
 
 #init for distance mapping
 POWER = 10
@@ -60,8 +65,8 @@ def get_status(val_list): #check where there is no line
         return 'forward'
     if _state == [0, 1, 1]:
         return 'right'
-    if _state == [1, 0, 1]:
-        return 'stop'
+    if _state == [1, 0, 1]: #2 background vs 1 line, might be noise, choose left by default 
+        return 'left'
     if _state == [1, 1, 0]:
         return 'left'
     if _state == [0, 0, 1]:
@@ -73,37 +78,101 @@ def get_status(val_list): #check where there is no line
     if _state == [0,0,0]:
         return 'stop'
 
+    # if sum(_state) == 3:
+    #     return 'forward'
+    # if sum(_state) <3:
+    #     return 'stop'
+
+    # if _state == [1, 1, 1]:
+    #     return 'forward'
+    # if _state == [0, 1, 1]:
+    #     return 'right'
+    # if _state == [1, 0, 1]:
+    #     return 'stop'
+    # if _state == [1, 1, 0]:
+    #     return 'left'
+    # if _state == [0, 0, 1]:
+    #     return 'stop'
+    # if _state == [0, 1, 0]:
+    #     return 'stop'
+    # if _state == [1, 0, 0]:
+    #     return 'stop'
+    # if _state == [0,0,0]:
+    #     return 'stop'
+
+# def get_status(val_list): #check where there is no line
+#     _state = px.get_line_status(val_list)  # [bool, bool, bool], 0 means track, 1 means offtrack, offtrack will be triggered above threshold
+#     print (val_list,_state)
+#     if _state == [1, 1, 1]:
+#         return 'stop'
+#     if _state == [0, 1, 1]:
+#         return 'left'
+#     if _state == [1, 0, 1]: #2 background vs 1 line, might be noise, choose left by default 
+#         return 'forward'
+#     if _state == [1, 1, 0]:
+#         return 'right'
+#     if _state == [0, 0, 1]:
+#         return 'left'
+#     if _state == [0, 1, 0]:
+#         return 'right'
+#     if _state == [1, 0, 0]:
+#         return 'right'
+#     if _state == [0,0,0]:
+#         return 'forward'
+
 def outHandle(): #handle out of line by coming where the car moved from, until cleared off the line
     print('outHandle triggered')
     global last_state, current_state
     px.forward(0)
     px.backward(0)
-    if last_state == 'forward':
+    if last_state == 'forward' or current_state=='stop':
         # px.backward(10)
         # time.sleep(0.5)
         print('forward outhandle triggered')
-        px.set_dir_servo_angle(30)
-        px.backward(10)
-        time.sleep(1)
         px.set_dir_servo_angle(0)
         px.backward(10)
         time.sleep(0.5)
+        #try to wiggle for better reading
+        # px.set_dir_servo_angle(-10)
+        # px.backward(10)
+        # time.sleep(0.3)
+        px.set_dir_servo_angle(20)
+        px.backward(10)
+        time.sleep(0.5)
+        current_state_val_list = px.get_grayscale_data()
+        current_state = get_status(current_state_val_list)
+        if current_state=='stop': #if double triggered and still stuck, rotate more
+            px.set_dir_servo_angle(0)
+            px.set_dir_servo_angle(20)
+            px.backward(10)
+            time.sleep(1)
+
+        px.set_dir_servo_angle(0)
+        px.forward(POWER+10)
+        time.sleep(0.2) #change trajectory
+        px.backward(0)
+        
     if last_state == 'left':
-        print('left outhandle triggered')
+        print('left outhandle triggered, hardbackup from left side')
+        px.set_dir_servo_angle(0)
         px.set_dir_servo_angle(30)
         px.backward(10)
         time.sleep(1)
         px.set_dir_servo_angle(0)
         px.backward(10)
         time.sleep(0.5)
+        px.backward(0)
     elif last_state == 'right':
-        print('right outhandle triggered')
+        print('right outhandle triggered, hardbackup from right side')
+        px.set_dir_servo_angle(0)
         px.set_dir_servo_angle(-30)
         px.backward(10)
         time.sleep(1)
         px.set_dir_servo_angle(0)
         px.backward(10)
         time.sleep(0.5)
+        px.backward(0)
+
     # while True:
     #     gm_val_list = px.get_grayscale_data()
     #     gm_state = get_status(gm_val_list)
@@ -113,37 +182,45 @@ def outHandle(): #handle out of line by coming where the car moved from, until c
     #         break
     time.sleep(0.001)
 
-def normalHandle(): #handle out of line by coming where the car moved from, until cleared off the line
+def normalHandle(): #handle out of line by coming where the car moved from, until cleared off the line; normal handle will try to steer clear instead of stopping and retreat
     global last_state, current_state
-    if last_state == 'forward':
-        # px.backward(10)
-        # time.sleep(0.5)
-        print('forward normalhandle triggered')
-        px.set_dir_servo_angle(30)
-        px.backward(10)
-        time.sleep(1)
-        px.set_dir_servo_angle(0)
-        px.backward(10)
-        time.sleep(0.5)
-        px.backward(0)
+    # if last_state == 'forward' or current_state=='stop':
+    #     # px.backward(10)
+    #     # time.sleep(0.5)
+    #     print('forward normalhandle triggered')
+    #     px.set_dir_servo_angle(0)
+    #     px.backward(10)
+    #     time.sleep(0.5)
+    #     #try to wiggle for better reading
+    #     px.set_dir_servo_angle(-20)
+    #     px.backward(10)
+    #     time.sleep(0.6)
+    #     px.forward(POWER)
+    #     time.sleep(0.2) #change trajectory
+    #     # px.set_dir_servo_angle(10)
+    #     # px.backward(10)
+    #     # time.sleep(0.5)
+    #     px.backward(0)
     if last_state == 'left':
         print('left normalHandle triggered')
-        px.set_dir_servo_angle(30)
-        px.forward(10)
-        time.sleep(1)
         px.set_dir_servo_angle(0)
-        px.forward(10)
-        time.sleep(0.5)
+        px.set_dir_servo_angle(-30)
+        px.forward(20)
+        time.sleep(0.8)
+        px.set_dir_servo_angle(0)
+        px.forward(20)
+        time.sleep(0.3)
         px.forward(0)
 
     elif last_state == 'right':
         print('right outhandle triggered')
-        px.set_dir_servo_angle(-30)
-        px.forward(10)
-        time.sleep(1)
         px.set_dir_servo_angle(0)
-        px.forward(10)
-        time.sleep(0.5)
+        px.set_dir_servo_angle(30)
+        px.forward(20)
+        time.sleep(0.8)
+        px.set_dir_servo_angle(0)
+        px.forward(20)
+        time.sleep(0.3)
         px.forward(0)
 
     # while True:
@@ -168,6 +245,7 @@ def main():
         px.set_cam_tilt_angle(0)
         px.set_cam_pan_angle(0)
         px.forward(POWER)
+        global last_state, current_state
         
 
         while True:
@@ -187,20 +265,40 @@ def main():
             #go forward
             #check for black line
 
-            if gm_state == "stop":
+            if (gm_state == "stop"):
+                last_state = gm_state
                 print('gm_state==stop hit ', gm_state)
                 px.forward(0)
                 px.backward(0)
                 time.sleep(1)
                 outHandle()
-            if gm_state != "stop":
+                current_state_val_list = px.get_grayscale_data()
+                current_state = get_status(current_state_val_list)
+
+
+            elif (gm_state == "left" or gm_state == "right"):
+                last_state = gm_state
+                normalHandle()
+                px.set_dir_servo_angle(0)
+                px.forward(POWER)
+                current_state_val_list = px.get_grayscale_data()
+                current_state = get_status(current_state_val_list)
+                if current_state==last_state:
+                    px.forward(0)
+                    px.backward(0)
+                    time.sleep(1)
+                    outHandle()
+
+            elif gm_state == "forward":
                 print('gm_state!=stop hit', gm_state)
-                global last_state 
                 last_state = gm_state
                 print('moving forward in main')
                 px.set_dir_servo_angle(0)
                 px.forward(POWER)
-                time.sleep(0.3)
+                time.sleep (0.1)
+
+            # px.forward(POWER)
+            # time.sleep (0.2)
                 # if gm_state == 'forward':
                 #     px.set_dir_servo_angle(0)
                 #     px.backward(POWER)
