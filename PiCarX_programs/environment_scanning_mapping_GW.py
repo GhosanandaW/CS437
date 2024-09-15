@@ -1,19 +1,11 @@
 from picarx import Picarx
 import time
 
-#init pycar class
-px = Picarx()
-
-#init for distance mapping
 POWER = 20
 SafeDistance = 30   # > 40 safe
 DangerDistance = 10 # > 20 && < 40 turn around, 
                     # < 20 backward
 direction_choices_dictionary={}
-#init for line tracking
-current_state=None
-offset=20
-last_state='stop'
 
 def sweep_cam_pan_servo(self, servo_step=30, delay=1):
     """
@@ -48,34 +40,6 @@ def spin_to_scan(self):
     self.backward(20)
     time.sleep(1)
 
-def get_status(val_list): #check where the line position is, to run outhandling
-    _state = px.get_line_status(val_list)  # [bool, bool, bool], 0 means line, 1 means background
-    if _state == [0, 0, 0]:
-        return 'stop'
-    elif _state[1] == 1:
-        return 'forward'
-    elif _state[0] == 1:
-        return 'right'
-    elif _state[2] == 1:
-        return 'left'
-
-def outHandle(): #handle out of line by coming where the car moved from, until cleared off the line
-    global last_state, current_state
-    if last_state == 'left':
-        px.set_dir_servo_angle(-30)
-        px.backward(10)
-    elif last_state == 'right':
-        px.set_dir_servo_angle(30)
-        px.backward(10)
-    while True:
-        gm_val_list = px.get_grayscale_data()
-        gm_state = get_status(gm_val_list)
-        print("outHandle gm_val_list: %s, %s"%(gm_val_list, gm_state))
-        currentSta = gm_state
-        if currentSta != last_state:
-            break
-    time.sleep(0.001)
-
 
 
 def main():
@@ -85,6 +49,7 @@ def main():
 
         # Do something that takes time
         # time.sleep(3.0 - ((time.monotonic() - starttime) % 3.0))
+        px = Picarx()
         # px = Picarx(ultrasonic_pins=['D2','D3']) # tring, echo
         px.set_dir_servo_angle(0)
         px.set_cam_tilt_angle(0)
@@ -92,36 +57,13 @@ def main():
             
 
         while True:
-            #read time
             end_time = time.monotonic()
             elapsed_time = int(end_time - start_time)
             print("Elapsed time:", elapsed_time, "seconds")
-            #read distance 
             distance = round(px.ultrasonic.read(), 2)
             print("distance: ",distance)
-            #read greyscale/line
-            gm_val_list = px.get_grayscale_data()
-            gm_state = get_status(gm_val_list)
-            print("gm_val_list: %s, %s"%(gm_val_list, gm_state))
+            # print("distance data type: ",type(distance))
 
-            #check for black line
-            if gm_state != "stop":
-                global last_state 
-                last_state = gm_state
-
-            if gm_state == 'forward':
-                px.set_dir_servo_angle(0)
-                px.forward(POWER)
-            elif gm_state == 'left':
-                px.set_dir_servo_angle(offset)
-                px.forward(POWER)
-            elif gm_state == 'right':
-                px.set_dir_servo_angle(-offset)
-                px.forward(POWER)
-            else:
-                outHandle()
-
-            #check for distance and avoidance logic
             #sanity check for blind spot
             # px.set_cam_pan_angle(-30)
             # time.sleep(0.5)
