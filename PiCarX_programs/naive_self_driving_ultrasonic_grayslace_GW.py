@@ -1,9 +1,11 @@
 from picarx import Picarx
 import time
 
+#init for PiCar
 px = Picarx()
-
 POWER = 20
+
+#init for distance avoidance
 SafeDistance = 25   # > 30 safe
 DangerDistance = 10 # > 20 && < 10 backup
 direction_choices_dictionary={}
@@ -14,10 +16,8 @@ current_state=None
 offset=20
 last_state='forward'
 
+#Sweeps the camera pan servo from min to max angle with a specific angle stepping and delay
 def sweep_cam_pan_servo(self, servo_step=30, delay=1):
-    """
-    Sweeps the camera pan servo from min to max angle with a specified speed and delay.
-    """
     self.set_cam_pan_angle(0)
     self.set_cam_tilt_angle(0)
 
@@ -33,18 +33,20 @@ def sweep_cam_pan_servo(self, servo_step=30, delay=1):
     self.cam_pan.pulse_width_percent(0)
     self.cam_tilt.pulse_width_percent(0)
 
+    #Spin clockwise backward if there is no path ahead after checking
 def spin_to_scan(self):
     print ('no safe path ahead, spinning to scan other direction')
-    # self.backward(POWER)
-    # time.sleep(1)
+   
     self.backward(0)
     time.sleep(1)
     self.set_dir_servo_angle(-30)
     self.backward(20)
     time.sleep(1)
 
-def get_status(val_list): #check where there is no line
-    _state = px.get_line_status(val_list)  # [bool, bool, bool], 0 means line, 1 means background and lower than threshold == 1
+    #check where there is no line
+    # [bool, bool, bool], 0 means line, 1 means background and lower than threshold of set_line reference == 1
+def get_status(val_list):
+    _state = px.get_line_status(val_list)  
     print (val_list,_state)
     if _state == [1, 1, 1]:
         return 'forward'
@@ -62,23 +64,20 @@ def get_status(val_list): #check where there is no line
         return 'left'
     if _state == [0,0,0]:
         return 'stop'
-    
-def outHandle(): #handle out of line by coming where the car moved from, until cleared off the line
+
+#handle out of line by coming where the car moved from and back up, until cleared off the line
+def outHandle(): 
     print('outHandle triggered')
     global last_state, current_state
     px.forward(0)
     px.backward(0)
     if last_state == 'forward' or current_state=='stop':
-        # px.backward(10)
-        # time.sleep(0.5)
+
         print('forward outhandle triggered')
         px.set_dir_servo_angle(0)
         px.backward(10)
         time.sleep(0.5)
-        #try to wiggle for better reading
-        # px.set_dir_servo_angle(-10)
-        # px.backward(10)
-        # time.sleep(0.3)
+
         px.set_dir_servo_angle(20)
         px.backward(10)
         time.sleep(0.5)
@@ -116,34 +115,11 @@ def outHandle(): #handle out of line by coming where the car moved from, until c
         time.sleep(0.5)
         px.backward(0)
 
-    # while True:
-    #     gm_val_list = px.get_grayscale_data()
-    #     gm_state = get_status(gm_val_list)
-    #     print("outHandle gm_val_list: %s, %s"%(gm_val_list, gm_state))
-    #     currentSta = gm_state
-    #     if currentSta != 'stop':
-    #         break
     time.sleep(0.001)
 
-def normalHandle(): #handle out of line by coming where the car moved from, until cleared off the line; normal handle will try to steer clear instead of stopping and retreat
+#normal handle will try to steer clear and move forward instead of stopping and retreat
+def normalHandle(): 
     global last_state, current_state
-    # if last_state == 'forward' or current_state=='stop':
-    #     # px.backward(10)
-    #     # time.sleep(0.5)
-    #     print('forward normalhandle triggered')
-    #     px.set_dir_servo_angle(0)
-    #     px.backward(10)
-    #     time.sleep(0.5)
-    #     #try to wiggle for better reading
-    #     px.set_dir_servo_angle(-20)
-    #     px.backward(10)
-    #     time.sleep(0.6)
-    #     px.forward(POWER)
-    #     time.sleep(0.2) #change trajectory
-    #     # px.set_dir_servo_angle(10)
-    #     # px.backward(10)
-    #     # time.sleep(0.5)
-    #     px.backward(0)
     if last_state == 'left':
         print('left normalHandle triggered')
         px.set_dir_servo_angle(0)
@@ -165,27 +141,26 @@ def normalHandle(): #handle out of line by coming where the car moved from, unti
         px.forward(20)
         time.sleep(0.3)
         px.forward(0)
-
     time.sleep(0.001)
 
 
 
 def main():
     try:
+        #init all the parameters to default position
         no_safe_path_counter=0
         start_time = time.monotonic()
-
         # px = Picarx(ultrasonic_pins=['D2','D3']) # tring, echo
         px.set_dir_servo_angle(0)
         px.set_cam_tilt_angle(0)
         px.set_cam_pan_angle(0)
         distance = round(px.ultrasonic.read(), 2)
         time.sleep(0.5) #ensure sanity check
-
         global last_state, current_state
 
 
         while True:
+            #check for time, distance, and grayscale
             end_time = time.monotonic()
             elapsed_time = int(end_time - start_time)
             print("Elapsed time:", elapsed_time, "seconds")
@@ -196,8 +171,9 @@ def main():
             gm_state = get_status(gm_val_list)
             print("gm_val_list: %s, %s"%(gm_val_list, gm_state))
 
-            #go forward
             #check for white line, line sensing section
+            #grayscale_module (gm_state) check, if it is not under the status stop, go forward,  
+            #the the status detect line, it will change the state and this code will try to go to that direction
             if (gm_state == "stop"):
                 last_state = gm_state
                 print('gm_state==stop hit ', gm_state)
@@ -207,7 +183,6 @@ def main():
                 outHandle()
                 current_state_val_list = px.get_grayscale_data()
                 current_state = get_status(current_state_val_list)
-
 
             elif (gm_state == "left" or gm_state == "right"):
                 last_state = gm_state
@@ -232,7 +207,7 @@ def main():
 
 
             #distance sensing main section
-            # print ('entering time monotonic check for cam angle')
+            #random sanity check for camera angle
             if (elapsed_time%3.0==0):
                 px.set_cam_pan_angle(-30)
             elif (elapsed_time%5.0==0):
@@ -240,26 +215,28 @@ def main():
             else:
                 px.set_cam_pan_angle(0)
 
-            print ('going into self driving mode')
-            if (distance<0 or distance<SafeDistance): #sanity check for noises
+            if (distance<0 or distance<SafeDistance): #sanity check for noises if distance sensed is negative
                 px.set_cam_pan_angle(-15)
                 px.set_cam_pan_angle(0)
                 px.set_cam_pan_angle(15)
                 px.set_cam_pan_angle(0)
                 distance = round(px.ultrasonic.read(), 2)
-                
+            
+            #abort and shutdown if retried 3 times
             if (no_safe_path_counter>=3):
                 print ('no safe path, high possibility of being stuck, call HELP!!!')
                 px.set_dir_servo_angle(0)
                 px.forward(0)
                 return False;
-        
+
+            #if the distance sensed is larger than safe distance, go forward
             elif (distance >= SafeDistance and distance>0):
                 print('distance >= SafeDistance dinged')
                 no_safe_path_counter=0
                 px.set_dir_servo_angle(0)
                 px.forward(POWER)
 
+            #if the distance sensed is smaller than safe distance and entered danger distance, backup immediately, then sweep for safe path
             elif (distance >= DangerDistance and distance>0):
                 print('distance >= DangerDistance dinged')
                 no_safe_path_counter=no_safe_path_counter+1
@@ -283,7 +260,6 @@ def main():
                 else:
                     px.set_dir_servo_angle(temp_new_dir_max_angle)
 
-                # px.set_dir_servo_angle(temp_new_dir_max_angle)
                 px.forward(POWER+10)
                 time.sleep(1) #run forward first for 2 seconds and recheck
                 distance = round(px.ultrasonic.read(), 2)
@@ -293,8 +269,7 @@ def main():
                     px.set_dir_servo_angle(0)
                     px.forward(POWER)
                     distance = round(px.ultrasonic.read(), 2)
-                    # time.sleep(2)
-                # time.sleep(2)
+
                 elif (distance < SafeDistance): #if still encounter obstacle, spin another direction to look for more options to go for
                     print('distance < SafeDistance dinged, moving to other direcitons')
                     px.forward(0)
@@ -345,7 +320,6 @@ def main():
 
                     distance = round(px.ultrasonic.read(), 2)
 
-
                 elif (distance < DangerDistance and distance>0): #if still within danger distance, look for other options to go for
                     print('distance < DangerDistance dinged second time, spinning')
                     spin_to_scan(px)
@@ -353,6 +327,7 @@ def main():
                     distance = round(px.ultrasonic.read(), 2)
 
     finally:
+        #if commanded to stop, stop all motor function
         px.forward(0)
         if distance <0:
             px.forward(0)
