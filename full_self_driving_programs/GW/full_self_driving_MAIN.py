@@ -102,6 +102,11 @@ def main():
     stop_coordinate_absolute_map=(99,99)
     start_coordinate_local_map=(0,0)
     stop_coordinate_local_map=(10,10)
+    #declaration for next_type data type, not the correct starting value
+    next_path=[(-1,-1)]
+
+    #detect the distance the car should traverse in specific direction
+    length_path=0
 
     #main loop, for both traffic sign detection and Path finding
     while True:
@@ -115,18 +120,41 @@ def main():
 
         #traffic_sign_handling, will be running until traffic_sign_cleared
         if traffic_sign_detection_bool==True:
+            print('traffic_sign_detection loop hit!!!')
             # PiCarX_STOP_traffic_sign_reaction();
             #let the car take a breather
             sleep(1)
         
-        if traffic_sign_detection_bool==False:
+        while traffic_sign_detection_bool==False:
             # PiCarX_normal_actions();
+            # CODE BELOW NOT TESTED YET
             # If turning, then recalculate shortest path
             if (PiCarX_turn==True):
                     local_map=a_star_algorithm.a_star_search(absolute_map,start_coordinate_local_map,stop_coordinate_local_map)
                     absolute_map=a_star_algorithm.a_star_search(absolute_map,start_coordinate_absolute_map,stop_coordinate_absolute_map)
+                    next_path=a_star_algorithm.a_star_search_returnPath(absolute_map,start_coordinate_local_map,stop_coordinate_local_map)
 
+            #if Car move forward
+            else:
+                for index, coordinate in next_path:
+                        #check for the  difference in first tuple component
+                        if (next_path[0][index+1][0]-next_path[0][index][0])>0:
+                            length_path+=1
+                        else:
+                            break
+
+                        #check for the  difference in second tuple component
+                        if (next_path[0][index+1][1]-next_path[0][index][1])>0:
+                            length_path+=1
+                        else:
+                            break
                 
+                temp_time_driving_anchor=monotonic_ns()
+                while ((traffic_sign_detection_bool==False) and ((monotonic_ns()-temp_time_driving_anchor)<length_path)):
+                    print ('drive the car to the specified desination with directional, length, and power control')
+                    # PiCarX_normal_actions();
+                    
+
             ###YOUR CODE HERE!!!!
             sleep(1)
 

@@ -133,8 +133,8 @@ def astar(maze, start, end):
     return None
 
 
-def a_star_search(maze,start,end):
-    print('a star search computing')
+def a_star_search_returnMap(maze,start,end):
+    print('a star search computing, trying to return whole map')
     #ensure maze is in int type
     maze=(maze).astype(int)
 
@@ -143,8 +143,19 @@ def a_star_search(maze,start,end):
 
     #mark path in the global map as 999 to mark where the path is
     for iter in path:
-        maze[iter]=999
+        maze[iter]=1028
 
     #return a maze in a numpy array with an updated path
     maze=np.asarray(maze).astype(int)
     return maze
+
+def a_star_search_returnPath(maze,start,end):
+    print('a star search computing')
+    #ensure maze is in int type
+    maze=(maze).astype(int)
+
+    #running the actual a star algorithm
+    path = astar(maze, start, end)
+
+    #directly return an array of tuples of shortest path found in the A*
+    return path
