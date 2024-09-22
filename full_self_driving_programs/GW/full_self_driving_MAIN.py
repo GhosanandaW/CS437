@@ -85,11 +85,6 @@ def PiCarX_STOP_traffic_sign_reaction():
     px.forward(0) #sanity check on what to do after
     print('PiCarX_traffic_sign_reaction execution completed, going back to main loop')
 
-def PiCarX_normal_actions():
-    global PiCarX_turn
-    print('PiCarX_normal_actions executed')
-    PiCarX_turn==True;
-
 def PiCarX_rotate(next_direction='ERROR NEXT DIRECTION'):
     print('PiCarX needs to rotate to: ', next_direction)
 
@@ -216,6 +211,7 @@ def main():
             while ((traffic_sign_detection_bool==False) and ((monotonic_ns()-temp_time_driving_anchor)<length_path)):
                 print ('drive the car to the specified desination with directional, length, and power control')
                 # this check will break the while loop when the traffic_sign_detected, will go to the main while True loop
+                px.forward(POWER)
                 traffic_sign_detection_bool=traffic_sign_detection();
                 if traffic_sign_detection_bool==True:
                     #update and store remaining length of travel
