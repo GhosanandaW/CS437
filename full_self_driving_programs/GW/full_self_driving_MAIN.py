@@ -122,9 +122,9 @@ def main():
         if traffic_sign_detection_bool==False:
             # PiCarX_normal_actions();
             # If turning, then recalculate shortest path
-            # if (PiCarX_turn==True):
-            #         local_map=a_star_algorithm(absolute_map,start_coordinate_local_map,stop_coordinate_local_map)
-            #         absolute_map=a_star_algorithm(absolute_map,start_coordinate_absolute_map,stop_coordinate_absolute_map)
+            if (PiCarX_turn==True):
+                    local_map=a_star_algorithm.a_star_search(absolute_map,start_coordinate_local_map,stop_coordinate_local_map)
+                    absolute_map=a_star_algorithm.a_star_search(absolute_map,start_coordinate_absolute_map,stop_coordinate_absolute_map)
 
                 
             ###YOUR CODE HERE!!!!
