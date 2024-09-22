@@ -35,8 +35,11 @@ class Node:
             current = current.parent
         return path[::-1]
     
-    def euclidean_distance(self, other):
-        return round(sum([(self.position[i] - other.position[i])**2 for i in range(len(self.position))]) ** 0.5, 3)
+    # def euclidean_distance(self, other):
+    #     return round(sum([(self.position[i] - other.position[i])**2 for i in range(len(self.position))]) ** 0.5, 3)
+    
+    def manhattan_distance(self, other):
+        return round(sum([abs(self.position[i] - other.position[i]) for i in range(len(self.position))]), 3)
 
     def is_outside(self, maze):
         def check_dimension(dim_maze, position, dim=0):
@@ -129,7 +132,7 @@ def astar(maze, start, end):
             #calculate the heuristic
             cost = sum([(child.position[i] - current_node.position[i])**2 for i in range(dimension)]) ** 0.5
             child.g = current_node.g + cost
-            child.h = child.euclidean_distance(end_node)
+            child.h = child.manhattan_distance(end_node)
             child.f = child.g + child.h
 
             print ('g is: ', child.g)
