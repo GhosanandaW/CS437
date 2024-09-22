@@ -4,6 +4,8 @@ from time import sleep, time, strftime, localtime, monotonic_ns
 import threading
 import readchar
 import os
+import numpy as np
+import a_star_algorithm
 
 #insert here for your own device, controlling the traversal control
 from picarx import Picarx
@@ -12,6 +14,7 @@ from picarx import Picarx
 #initialization for PiCarX
 px = None
 POWER=0
+PiCarX_turn=False
 
 
 #initialization for any other car
@@ -21,6 +24,8 @@ POWER=0
 #init for utility
 #time in nanosecond referencing an absolute clock
 start_time = monotonic_ns()
+local_map=np.zeros((10,10), dtype=int) 
+absolute_map=np.zeros((100, 100), dtype=int)
 
 #init for traffic sign detection with OpenCV and TensorFlow Lite
 traffic_sign_detection_bool=False
@@ -75,11 +80,20 @@ def PiCarX_STOP_traffic_sign_reaction():
     print('PiCarX_traffic_sign_reaction execution completed, going back to main loop')
 
 def PiCarX_normal_actions():
-    print('PiCarX_normal_actions executed')``
+    global PiCarX_turn
+    print('PiCarX_normal_actions executed')
+    PiCarX_turn==True;
+
+def PiCar_turning_actions():
+    global
+    #if turn
+    absolute_map=a_star_algorithm(absolute_map,start_coordinate_absolute_map,stop_coordinate_absolute_map)
+    local_map=a_star_algorithm(absolute_map,start_coordinate_local_map,stop_coordinate_local_map)
+
 
 def main():
     #initialization for main section
-    global take_photo_counter, start_time
+    global take_photo_counter, start_time, absolute_map, local_map
 
     #start video streaming using Rasp Pi as host, transfer with HTTP in localhost, turn traffic_sign_detection to true
     Vilib.camera_start(vflip=False,hflip=False)
@@ -89,6 +103,12 @@ def main():
     #let the hardware warm up for 1 sec
     sleep(1)
 
+    #set coordinate variables for pathfinding
+    #placeholder values
+    start_coordinate_absolute_map=(0,0)
+    stop_coordinate_absolute_map=(99,99)
+    start_coordinate_local_map=(0,0)
+    stop_coordinate_local_map=(10,10)
 
     #main loop, for both traffic sign detection and Path finding
     while True:
@@ -102,13 +122,21 @@ def main():
 
         #traffic_sign_handling, will be running until traffic_sign_cleared
         if traffic_sign_detection_bool==True:
-            PiCarX_STOP_traffic_sign_reaction();
+            # PiCarX_STOP_traffic_sign_reaction();
             #let the car take a breather
             sleep(1)
         
         if traffic_sign_detection_bool==False:
-            PiCarX_normal_actions();
+            # PiCarX_normal_actions();
+            # If turning, then recalculate shortest path
+            # if (PiCarX_turn==True):
+            #         local_map=a_star_algorithm(absolute_map,start_coordinate_local_map,stop_coordinate_local_map)
+            #         absolute_map=a_star_algorithm(absolute_map,start_coordinate_absolute_map,stop_coordinate_absolute_map)
+
+                
             ###YOUR CODE HERE!!!!
+            sleep(1)
+
 
 
 if __name__ == "__main__":
