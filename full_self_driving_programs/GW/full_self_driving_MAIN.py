@@ -84,13 +84,6 @@ def PiCarX_normal_actions():
     print('PiCarX_normal_actions executed')
     PiCarX_turn==True;
 
-def PiCar_turning_actions():
-    global
-    #if turn
-    absolute_map=a_star_algorithm(absolute_map,start_coordinate_absolute_map,stop_coordinate_absolute_map)
-    local_map=a_star_algorithm(absolute_map,start_coordinate_local_map,stop_coordinate_local_map)
-
-
 def main():
     #initialization for main section
     global take_photo_counter, start_time, absolute_map, local_map
