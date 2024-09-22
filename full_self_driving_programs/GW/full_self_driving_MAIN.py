@@ -106,10 +106,10 @@ def main():
     #set coordinate variables for pathfinding
     #placeholder values
     start_coordinate_absolute_map=(0,0)
-    stop_coordinate_absolute_map=(99,99)
+    stop_coordinate_absolute_map=(999,999)
     start_coordinate_temp_map=(0,0)
     stop_coordinate_temp_map=(10,10)
-    current_coordinate=()
+    current_coordinate=(0,0)
     #declaration for next_type data type, not the correct starting value
     next_path=[(-1,-1)]
 
@@ -156,6 +156,7 @@ def main():
                 # If turning, then recalculate shortest path and length of the specified path, to be feed into the forward control
                 if next_direction!='starting':
                     PiCarX_rotate(next_direction);
+                    current_direction=next_direction
                 
                 #always scan and register obstacle in absolute map when length of travel required done
                 PiCarX_scan();
@@ -165,21 +166,22 @@ def main():
                 #grab length required to travel, convert it as to seconds for forward control
                 for index, coordinate in next_path:
                     #check for the  difference in first tuple component, if negative = needs to go up; if positive = needs to go down
-                    if (next_path[0][index+1][0]-next_path[0][index][0])>0:
-                        if (current_direction=='starting' or current_direction=='down'):
-                            length_path+=1
-                            current_direction='down'
-                        else:
-                            next_direction='down'
-                            stop_coordinate_temp_map=next_path[0][index]
-                            break
 
-                    elif (next_path[0][index+1][0]-next_path[0][index][0])<0:
+                    if (next_path[0][index+1][0]-next_path[0][index][0])<0:
                         if (current_direction=='starting' or current_direction=='up'):
                             length_path+=1
                             current_direction='up'
                         else:
                             next_direction='up'
+                            stop_coordinate_temp_map=next_path[0][index]
+                            break
+                
+                    elif (next_path[0][index+1][0]-next_path[0][index][0])>0:
+                        if (current_direction=='starting' or current_direction=='down'):
+                            length_path+=1
+                            current_direction='down'
+                        else:
+                            next_direction='down'
                             stop_coordinate_temp_map=next_path[0][index]
                             break
 
@@ -223,6 +225,9 @@ def main():
 
             ###YOUR CODE HERE!!!!
             sleep(1)
+        if current_coordinate==stop_coordinate_absolute_map:
+            print ('program finished and exited correctly, proceeding to close all applications')
+            return
 
 if __name__ == "__main__":
     try:
