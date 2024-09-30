@@ -9,9 +9,9 @@ class Node:
         self.parent = parent
         self.position = position
 
-        self.g = 0
-        self.h = 0
-        self.f = 0
+        self.g = 0  #distance between current node and start node
+        self.h = 0  #heuristic, estimated distance from the current node to end node
+        self.f = 0  #total cost of the node, f=g+h
 
     def __eq__(self, other):
         return self.position == other.position
@@ -97,6 +97,7 @@ def astar(maze, start, end):
 
         if current_node == end_node and open_list[0].f >= current_node.f:
             #! we are done
+            #ensuring short path
             return current_node.return_path()
 
         for new_position in adjacent_squares:
