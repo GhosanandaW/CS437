@@ -120,6 +120,8 @@ def main():
     #detect the distance the car should traverse in specific direction
     length_path=0
 
+
+    counter =0
     #main loop, for both traffic sign detection and Path finding
     while True:
         print('main full self driving loop running!!!')
@@ -128,6 +130,7 @@ def main():
         print ('time elapsed in seconds: ', str(time_elapsed))
 
         #traffic detection logic
+        print ('traffic_sign_detection check running')
         traffic_sign_detection_bool=traffic_sign_detection()
 
         #traffic_sign_handling, will be running until traffic_sign_cleared
