@@ -1,0 +1,14 @@
+{
+  "name": "fecontrol",
+  "version": "1.0.0",
+  "description": "Electron code base for PiCarX UI Control",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ghosananda Wijaya",
+  "license": "ISC",
+  "dependencies": {
+    "electron": "^32.1.2"
+  }
+}
