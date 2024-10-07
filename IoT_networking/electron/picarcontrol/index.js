@@ -18,8 +18,12 @@ function client(){
     
     // get the data from the server
     client.on('data', (data) => {
+        JSONParsedData=JSON.parse(data)
+        document.getElementById("direction").innerHTML = typeof(data);
+        document.getElementById("speed").innerHTML = JSONParsedData;
+        document.getElementById("temperature").innerHTML = (JSONParsedData.CPU_temp).toString();
         document.getElementById("bluetooth").innerHTML = data;
-        console.log(data.toString());
+        console.log(data.toString(), typeof(data));
         client.end();
         client.destroy();
     });
