@@ -2,6 +2,7 @@ import socket
 import gpiozero
 import json
 from picarx import Picarx
+import time
 
 HOST = "192.168.1.9" # IP address of your Raspberry PI
 PORT = 65432          # Port to listen on (non-privileged ports are > 1023)
@@ -48,43 +49,57 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             # print (dataObjectToSend.JSON_format(gpiozero.CPUTemperature().temperature))
 
             data = client.recv(1024)      # receive 1024 Bytes of message in binary format
+            encoded_data_for_sendall=json.dumps(dataObjectConstruction).encode()
+            client.sendall(encoded_data_for_sendall)
+
             if data != b"":
                 # print(data)
                 # client.sendall(data) # Echo back to client
             # print (json.dumps(dataObjectToSend.JSON_format(gpiozero.CPUTemperature().temperature)))
             # encoded_data_for_sendall=json.dumps(dataObjectToSend.JSON_format(gpiozero.CPUTemperature().temperature)).encode()
-                encoded_data_for_sendall=json.dumps(dataObjectConstruction).encode()
-                client.sendall(encoded_data_for_sendall)
-                if data ==b"87":
-                    px.set_dir_servo_angle(0)
-                    px.forward(power);
-                elif data ==b"82":
-                    px.set_dir_servo_angle(0)
-                    px.backward(power);
-                elif data ==b"68":
-                    px.set_dir_servo_angle(30)
-                    px.forward(power);
-                elif data ==b"65":
-                    px.set_dir_servo_angle(-30)
-                    px.forward(power);
-                else:
+                print(data);
+                if data==b"88":
                     px.set_dir_servo_angle(0);
                     px.forward(0);
                     px.backward(0);
+                    px.stop();
+                
+                if data ==b"87":
+                    px.set_dir_servo_angle(0)
+                    px.forward(power);
 
+                if data ==b"83":
+                    px.set_dir_servo_angle(0)
+                    px.backward(power);
 
+                
+                if data ==b"68":
+                    px.set_dir_servo_angle(30)
+                    px.forward(power);
 
+                
+                if data ==b"65":
+                    px.set_dir_servo_angle(-30)
+                    px.forward(power);
+                               
+                
+                # else:
+                #     px.set_dir_servo_angle(0);
+                #     px.forward(0);
+                #     px.backward(0);
             if data==b"break":
                 active_binding_status=False;
     
     except: 
         print("Closing socket")
+        px.stop();
         client.sendall(b'closing socket')
         client.close()
         s.close()
 
     finally:
         print("Closing socket, program exited correctly")
+        px.stop();
         client.sendall(b'closing connection from host')
         client.close()
         s.close() 
