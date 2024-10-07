@@ -95,7 +95,7 @@ function updateKey(e) {
         send_data("68");
     }
     else if (e.keyCode == '88') {
-        // right (d)
+        // stop (x)
         send_data("88");
     }
     console.log (e.keyCode)
