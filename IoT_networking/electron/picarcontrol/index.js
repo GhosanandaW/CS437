@@ -5,15 +5,15 @@ var server_port = 65432;
 var server_addr = "192.168.1.9";   // the IP address of your Raspberry PI
 
 function client(){
-    
+
     const net = require('net');
     var input = document.getElementById("message").value;
-
     const client = net.createConnection({ port: server_port, host: server_addr }, () => {
         // 'connect' listener.
         console.log('connected to server!');
         // send the message
-        client.write(`${input}\r\n`);
+        // client.write(`${input}\r\n`);
+        client.write(`${input}`);
     });
     
     // get the data from the server
@@ -22,11 +22,45 @@ function client(){
         document.getElementById("direction").innerHTML = typeof(data);
         document.getElementById("speed").innerHTML = JSONParsedData;
         document.getElementById("temperature").innerHTML = (JSONParsedData.CPU_temp).toString();
+        document.getElementById("ultrasonic").innerHTML = (JSONParsedData.ultrasonic_distance).toString();
         document.getElementById("bluetooth").innerHTML = data;
         console.log(data.toString(), typeof(data));
         client.end();
         client.destroy();
     });
+
+    client.on('end', () => {
+        console.log('disconnected from server');
+    });
+
+
+}
+
+function send_data(arrowInput){
+
+    const net = require('net');
+    var input = arrowInput
+
+    const client = net.createConnection({ port: server_port, host: server_addr }, () => {
+        // 'connect' listener.
+        console.log('connected to server!');
+        // send the message
+        // client.write(`${input}\r\n`);
+        client.write(`${input}`);
+    });
+    
+    // get the data from the server
+    // client.on('data', (data) => {
+    //     JSONParsedData=JSON.parse(data)
+    //     document.getElementById("direction").innerHTML = typeof(data);
+    //     document.getElementById("speed").innerHTML = JSONParsedData;
+    //     document.getElementById("temperature").innerHTML = (JSONParsedData.CPU_temp).toString();
+    //     document.getElementById("ultrasonic").innerHTML = (JSONParsedData.ultrasonic_distance).toString();
+    //     document.getElementById("bluetooth").innerHTML = data;
+    //     console.log(data.toString(), typeof(data));
+    //     client.end();
+    //     client.destroy();
+    // });
 
     client.on('end', () => {
         console.log('disconnected from server');
@@ -60,6 +94,12 @@ function updateKey(e) {
         document.getElementById("rightArrow").style.color = "green";
         send_data("68");
     }
+    else if (e.keyCode == '88') {
+        // right (d)
+        send_data("88");
+    }
+    console.log (e.keyCode)
+
 }
 
 // reset the key to the start state 
@@ -81,3 +121,4 @@ function update_data(){
         client();
     }, 50);
 }
+
