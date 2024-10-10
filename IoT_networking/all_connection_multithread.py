@@ -32,7 +32,7 @@ def bluetooth_thread():
     def data_received_handling(data):
         if (data=='break'):
             print('breaking bluetooth connection')
-            break
+            return
 
     def received_handler(data='connected'):
         active_binding_status:bool=True;
