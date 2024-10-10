@@ -29,6 +29,7 @@ class dataObject:
         return {"CPU_temp":self.CPU_temp, "ultrasonic_distance":self.ultrasonic_distance}
 
 def bluetooth_thread():
+    print ('thread running for bluetooth')
     def received_handler(data='connected'):
         active_binding_status:bool=True;
         CPU_temp=gpiozero.CPUTemperature().temperature;
@@ -47,6 +48,7 @@ def bluetooth_thread():
     pause()
 
 def wifi_thread():
+    print ('thread running for wifi')
     HOST = "192.168.1.7" # IP address of your Raspberry PI
     PORT = 65432          # Port to listen on (non-privileged ports are > 1023)
     socket.socket(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -115,11 +117,14 @@ def wifi_thread():
 
 if __name__ =="__main__":
     try:
-        t1 = threading.Thread(target=bluetooth_thread)
-        t2 = threading.Thread(target=wifi_thread)
+        t1 = threading.Thread(target=bluetooth_thread,)
+        t2 = threading.Thread(target=wifi_thread,)
 
         t1.start()
         t2.start()
+
+        t1.join()
+        t2.join()
     except:
         print ('both thread 1/2 completed running')
         print ('closing program')
