@@ -4,7 +4,6 @@ import socket
 import gpiozero
 import json
 from picarx import Picarx
-import time
 import threading
 
 #PiCarX init and telemetry
@@ -63,6 +62,7 @@ def wifi_thread():
         
         try:
             while active_binding_status==True:
+                print ('wifi main while loop running')
                 client, clientInfo = s.accept()
                 print("server recv from: ", clientInfo)
 
