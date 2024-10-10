@@ -7,27 +7,28 @@ from picarx import Picarx
 import time
 import threading
 
-def bluetooth_thread():
-    #PiCarX init and telemetry
-    px = Picarx()
-    CPU_temp:float = gpiozero.CPUTemperature().temperature;
-    # print (CPU_temp)
-    ultrasonic_distance = round(px.ultrasonic.read(), 2);
+#PiCarX init and telemetry
+px = Picarx()
+CPU_temp:float = gpiozero.CPUTemperature().temperature;
+# print (CPU_temp)
+ultrasonic_distance = round(px.ultrasonic.read(), 2);
+power=10
 
-    #data object to send
-    class dataObject:
-        CPU_temp:float=0;
-        ultrasonic_distance:float=0;
+#data object to send
+class dataObject:
+    CPU_temp:float=0;
+    ultrasonic_distance:float=0;
 
-        def __init__(self, CPU_temp,ultrasonic_distance):
-            self.CPU_temp = CPU_temp
-            self.ultrasonic_distance=ultrasonic_distance
-        
-        def JSON_format(self,CPU_temp, ultrasonic_distance):
-            self.CPU_temp=CPU_temp
-            self.ultrasonic_distance=ultrasonic_distance
-            return {"CPU_temp":self.CPU_temp, "ultrasonic_distance":self.ultrasonic_distance}
+    def __init__(self, CPU_temp,ultrasonic_distance):
+        self.CPU_temp = CPU_temp
+        self.ultrasonic_distance=ultrasonic_distance
     
+    def JSON_format(self,CPU_temp, ultrasonic_distance):
+        self.CPU_temp=CPU_temp
+        self.ultrasonic_distance=ultrasonic_distance
+        return {"CPU_temp":self.CPU_temp, "ultrasonic_distance":self.ultrasonic_distance}
+
+def bluetooth_thread():
     def received_handler(data='connected'):
         active_binding_status:bool=True;
         CPU_temp=gpiozero.CPUTemperature().temperature;
@@ -49,30 +50,6 @@ def wifi_thread():
     HOST = "192.168.1.7" # IP address of your Raspberry PI
     PORT = 65432          # Port to listen on (non-privileged ports are > 1023)
     socket.socket(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-
-    #PiCarX init and telemetry
-    px = Picarx()
-    CPU_temp:float = gpiozero.CPUTemperature().temperature;
-    print (CPU_temp)
-    ultrasonic_distance = round(px.ultrasonic.read(), 2);
-    power=10
-
-    #data object to send
-    class dataObject:
-        CPU_temp:float=0;
-        ultrasonic_distance:float=0;
-
-        def __init__(self, CPU_temp,ultrasonic_distance):
-            self.CPU_temp = CPU_temp
-            self.ultrasonic_distance=ultrasonic_distance
-        
-        def JSON_format(self,CPU_temp, ultrasonic_distance):
-            self.CPU_temp=CPU_temp
-            self.ultrasonic_distance=ultrasonic_distance
-            return {"CPU_temp":self.CPU_temp, "ultrasonic_distance":self.ultrasonic_distance}
-
-
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((HOST, PORT))
@@ -146,6 +123,3 @@ if __name__ =="__main__":
     except:
         print ('both thread 1/2 completed running')
         print ('closing program')
-        
-    
-
