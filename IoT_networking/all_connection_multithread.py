@@ -4,6 +4,7 @@ import socket
 import gpiozero
 import json
 from picarx import Picarx
+from vilib import Vilib #adapted and referenced from Sunfounder Vilib library: https://github.com/sunfounder/vilib
 import threading
 
 #PiCarX init and telemetry
@@ -29,22 +30,29 @@ class dataObject:
 
 def bluetooth_thread():
     print ('thread running for bluetooth')
+    data_snapshot:string='';
+    active_binding_status:bool=True;
+
     def data_received_handling(data):
+        if (data!=None):
+            data_snapshot=data;
+            print ('data received for bluetooth connection is: ', data)
+            print ('data_snapshot received for bluetooth connection is: ', data_snapshot)
         if (data=='break'):
             print('breaking bluetooth connection')
             return
 
     def received_handler(data='connected'):
-        active_binding_status:bool=True;
         CPU_temp=gpiozero.CPUTemperature().temperature;
         ultrasonic_distance=round(px.ultrasonic.read(), 2)
         dataObjectToSend= dataObject(CPU_temp, ultrasonic_distance)
         while active_binding_status:
             try:
-                dataObjectConstruction=dataObjectToSend.JSON_format(gpiozero.CPUTemperature().temperature, round(px.ultrasonic.read(), 2))
-                encoded_data_for_sendall=json.dumps(dataObjectConstruction)
-                s.send(encoded_data_for_sendall)
-                print ('data is: ', encoded_data_for_sendall)
+                if (data_snapshot == b"start telemetry" and data_snapshot!= b"stop telemetry"):
+                    dataObjectConstruction=dataObjectToSend.JSON_format(gpiozero.CPUTemperature().temperature, round(px.ultrasonic.read(), 2))
+                    encoded_data_for_sendall=json.dumps(dataObjectConstruction)
+                    s.send(encoded_data_for_sendall)
+                    print ('data is: ', encoded_data_for_sendall)
             except Exception as e: 
                 break
 
@@ -71,13 +79,20 @@ def wifi_thread():
             while active_binding_status==True:
                 print ('wifi main while loop running')
                 print("server recv from: ", clientInfo)
-
-                dataObjectConstruction=dataObjectToSend.JSON_format(gpiozero.CPUTemperature().temperature, round(px.ultrasonic.read(), 2))                
-                encoded_data_for_sendall=json.dumps(dataObjectConstruction).encode()
-                client.sendall(encoded_data_for_sendall)
-                print(dataObjectConstruction)
-
                 data = client.recv(1024)      # receive 1024 Bytes of message in binary format
+
+                if (data == b"start telemetry" and data!= b"stop telemetry"):
+                    #send telemetry data via wifi
+                    dataObjectConstruction=dataObjectToSend.JSON_format(gpiozero.CPUTemperature().temperature, round(px.ultrasonic.read(), 2))                
+                    encoded_data_for_sendall=json.dumps(dataObjectConstruction).encode()
+                    client.sendall(encoded_data_for_sendall)
+
+                if (data == b"start camera"):
+                    Vilib.camera_start(vflip=False,hflip=False)
+
+                if (data==b"stop camera"):
+                    Vilib.camera_close()
+
                 if data != b"":
                     print(data);
                     if data==b"88":
@@ -119,7 +134,7 @@ def wifi_thread():
             px.stop();
             client.sendall(b'closing connection from host')
             client.close()
-            s.close() 
+            s.close()
 
 if __name__ =="__main__":
     try:
