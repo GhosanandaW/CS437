@@ -211,6 +211,7 @@ def wifi_thread():
             if data != b"":
                 # print(data);
                 if data==b"88":
+                    power=0
                     px.set_dir_servo_angle(0);
                     px.forward(0);
                     px.backward(0);
@@ -299,7 +300,7 @@ def wifi_thread_telemetry():
                 # s.send('telemetry stopped, type start telemetry to enable')
                 # break;
             # print ('t3 running')
-            if (wifi_thread_telemetry_thread_run==True):
+            if (wifi_thread_telemetry_thread_run==True and client!=None):
                 # print ('wifi telemetry running')
                 # print ('t3 switch is true')
                 if (wifi_time_snapshot==-1):
@@ -321,7 +322,7 @@ def wifi_thread_telemetry():
                     # print ('time sanity check: ', int(time_elapsed), time_snapshot)
 
             if (wifi_thread_telemetry_thread_run==False):
-                dataObjectConstruction=dataObjectToSend.JSON_format('stop', 0,0,0)
+                dataObjectConstruction=dataObjectToSend.JSON_format('stop',0,0,0)
                 encoded_data_for_sendall=json.dumps(dataObjectConstruction).encode()
                 client.sendall(encoded_data_for_sendall)
                 print ('data sent is: ', encoded_data_for_sendall)
