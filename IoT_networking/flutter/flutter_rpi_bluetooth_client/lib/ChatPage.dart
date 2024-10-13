@@ -160,86 +160,11 @@ class _ChatPage extends State<ChatPage> {
     );
   }
 
-  // void _onDataReceived(Uint8List data) {
-  //   // Allocate buffer for parsed data
-  //   int backspacesCounter = 0;
-  //   data.forEach((byte) {
-  //     if (byte == 8 || byte == 127) {
-  //       backspacesCounter++;
-  //     }
-  //   });
-  //   Uint8List buffer = Uint8List(data.length - backspacesCounter);
-  //   int bufferIndex = buffer.length;
-
-  //   // Apply backspace control character
-  //   backspacesCounter = 0;
-  //   for (int i = data.length - 1; i >= 0; i--) {
-  //     if (data[i] == 8 || data[i] == 127) {
-  //       backspacesCounter++;
-  //     } else {
-  //       if (backspacesCounter > 0) {
-  //         backspacesCounter--;
-  //       } else {
-  //         buffer[--bufferIndex] = data[i];
-  //       }
-  //     }
-  //   }
-
-  //   // Create message if there is new line character
-  //   String dataString = String.fromCharCodes(buffer);
-  //   int index = buffer.indexOf(13);
-  //   if (~index != 0) {
-  //     setState(() {
-  //       messages.add(
-  //         _Message(
-  //           1,
-  //           backspacesCounter > 0
-  //               ? _messageBuffer.substring(
-  //                   0, _messageBuffer.length - backspacesCounter)
-  //               : _messageBuffer + dataString.substring(0, index),
-  //         ),
-  //       );
-  //       _messageBuffer = dataString.substring(index);
-  //     });
-  //   } else {
-  //     // _messageBuffer = (backspacesCounter > 0
-  //     //     ? _messageBuffer.substring(
-  //     //         0, _messageBuffer.length - backspacesCounter)
-  //     //     : _messageBuffer + dataString);
-  //     _messageBuffer = 'placeholder test string';
-  //   }
-  // }
-
  void _onDataReceived(data) {
     print('data received with value: ');
     print (utf8.decode(data));
-    // // Allocate buffer for parsed data
-    // int backspacesCounter = 0;
-    // data.forEach((byte) {
-    //   if (byte == 8 || byte == 127) {
-    //     backspacesCounter++;
-    //   }
-    // });
-    // Uint8List buffer = Uint8List(data.length - backspacesCounter);
-    // int bufferIndex = buffer.length;
 
-    // // Apply backspace control character
-    // backspacesCounter = 0;
-    // for (int i = data.length - 1; i >= 0; i--) {
-    //   if (data[i] == 8 || data[i] == 127) {
-    //     backspacesCounter++;
-    //   } else {
-    //     if (backspacesCounter > 0) {
-    //       backspacesCounter--;
-    //     } else {
-    //       buffer[--bufferIndex] = data[i];
-    //     }
-    //   }
-    // }
-
-    // Create message if there is new line character
-    // String dataString = String.fromCharCodes(buffer);
-    // int index = buffer.indexOf(13);
+    // data reconstruction from object to human readable string
     var dataUTF= utf8.decode(data);
     var finalString='placeholder';
     if (dataUTF.substring(0,1)=='{'){

@@ -12,10 +12,11 @@ import sys
 #PiCarX init and telemetry
 px = Picarx()
 CPU_temp:float = gpiozero.CPUTemperature().temperature;
-# print (CPU_temp)
 ultrasonic_distance = round(px.ultrasonic.read(), 2);
 power=0
 car_direction='stop';
+
+#server and client connection init
 start_time = monotonic_ns()
 s=None
 s_wifi=None
@@ -45,6 +46,7 @@ class dataObject:
         self.ultrasonic_distance=ultrasonic_distance
         return {"car_direction":self.car_direction, "power":self.power, "CPU_temp":self.CPU_temp, "ultrasonic_distance":self.ultrasonic_distance}
 
+#Main bluetooth thread for setup and communication middle layer
 def bluetooth_thread():
     global s
     print ('thread running for bluetooth')
@@ -55,36 +57,6 @@ def bluetooth_thread():
     def data_received_handling(data):
         global bluetooth_thread_telemetry_thread_run, bluetooth_time_snapshot, wifi_time_snapshot
         data=data.strip()
-        print ('data is: ', data)
-        # CPU_temp=gpiozero.CPUTemperature().temperature;
-        # ultrasonic_distance=round(px.ultrasonic.read(), 2)
-        # dataObjectToSend= dataObject(CPU_temp, ultrasonic_distance)
-        # if (data!=None):
-        #     data_snapshot=data.strip();
-        #     print ('data received for bluetooth connection is:', data)
-        #     print (type(data))
-        #     print ('data_snapshot received for bluetooth connection is:', data_snapshot.strip())
-        #     print (type(data_snapshot))
-        #     while (data_snapshot=='start telemetry' and data_snapshot!='stop telemetry'):
-        #         try:
-        #             # print(data_snapshot)
-        #             data_snapshot=data.strip();
-        #             current_time = monotonic_ns()
-        #             time_elapsed=(current_time-start_time)/1000000000
-        #             print('data_snapshot is:', data_snapshot)
-        #             print (time_elapsed)
-        #             print (time_elapsed%5)
-        #             print (int(time_elapsed)%5)
-        #             if (int(time_elapsed)%5==0):
-        #                 dataObjectConstruction=dataObjectToSend.JSON_format(gpiozero.CPUTemperature().temperature, round(px.ultrasonic.read(), 2))
-        #                 encoded_data_for_sendall=json.dumps(dataObjectConstruction)
-        #                 s.send(encoded_data_for_sendall)
-        #                 print ('command snapshot is: ', data_snapshot)
-        #                 print ('time elapsed is: ', time_elapsed)
-        #                 print ('data sent is: ', encoded_data_for_sendall)
-        #         except Exception as e:
-        #             print (e)
-        #             break
 
         if (data=='start telemetry'):
             print ('starting telemetry for bluetooth')
@@ -92,91 +64,64 @@ def bluetooth_thread():
             bluetooth_time_snapshot=-1
             wifi_time_snapshot=-1
             bluetooth_thread_telemetry_thread_run=True;
-            # t3.start()
 
         if (data=='stop telemetry'):
             print ('stopping telemetry for bluetooth')
             s.send('stopping telemetry for bluetooth')
             bluetooth_thread_telemetry_thread_run=False;
-            # t3.join();
 
         if (data=='break'):
             print('breaking bluetooth connection')
             return
 
     def received_handler(data='connected'):
-        # CPU_temp=gpiozero.CPUTemperature().temperature;
-        # ultrasonic_distance=round(px.ultrasonic.read(), 2)
-        # dataObjectToSend= dataObject(CPU_temp, ultrasonic_distance)
-        # while active_binding_status:
         print ('received_handler running, starting t3 thread')
         t3.start();
-        # if data_snapshot!=None and data_snapshot!='':
-        #     print ('data_snapshot is: ', data_snapshot)
-        # if data_snapshot=='start telemetry':
-        #     try:
-        #         print(data_snapshot)
-        #         if (data_snapshot == b"start telemetry" and data_snapshot!= b"stop telemetry"):
-        #             dataObjectConstruction=dataObjectToSend.JSON_format(gpiozero.CPUTemperature().temperature, round(px.ultrasonic.read(), 2))
-        #             encoded_data_for_sendall=json.dumps(dataObjectConstruction)
-        #             s.send(encoded_data_for_sendall)
-        #             print ('data is: ', encoded_data_for_sendall)
-        #     except Exception as e:
-        #         return
-
-    # s=BluetoothServer(data_received_callback=data_received_handling,when_client_connects=received_handler)
+    
     s=BluetoothServer(data_received_callback=data_received_handling,when_client_connects=received_handler)
     pause()
 
+#Bluetooth telemetry thread controlled by bluetooth main thread
 def bluetooth_thread_telemetry():
     global s, bluetooth_thread_telemetry_thread_run, bluetooth_time_snapshot
-    # print('bluetooth telemetry starting and running!')
-    # s.send('bluetooth telemetry starting and running! Type stop telemetry to disable')
+    
+    #telemetry data init
     CPU_temp=gpiozero.CPUTemperature().temperature;
     ultrasonic_distance=round(px.ultrasonic.read(), 2)
-    # dataObjectToSend= dataObject(CPU_temp, ultrasonic_distance)
     dataObjectToSend=dataObject();
+
+    #telemetry data main loop
     while (True):
         try:
             global bluetooth_thread_telemetry_thread_run, bluetooth_time_snapshot, car_direction, power
             current_time = monotonic_ns()
             time_elapsed=(current_time-start_time)/1000000000
-            # print (int(time_elapsed))
-            # print (time_snapshot)
-            # print (time_elapsed%5)
-            # print ('before time comparison is: ', int(time_elapsed)%5)
-            # if (bluetooth_thread_telemetry_thread_run==False):
-                # s.send('telemetry stopped, type start telemetry to enable')
-                # break;
-            # print ('t3 running')
+
+            #if telemetry switched to true = send data to all connected device
+            #if telemetry switched to false = stop sending data
             if (bluetooth_thread_telemetry_thread_run==True):
-                # print ('t3 switch is true')
                 if (bluetooth_time_snapshot==-1):
                     dataObjectConstruction=dataObjectToSend.JSON_format(car_direction, power, gpiozero.CPUTemperature().temperature, round(px.ultrasonic.read(), 2))
                     encoded_data_for_sendall=json.dumps(dataObjectConstruction)
                     s.send(encoded_data_for_sendall)
-                    # print ('data sent is: ', encoded_data_for_sendall)
                     bluetooth_time_snapshot=int(time_elapsed)+5
 
                 if (bluetooth_time_snapshot==int(time_elapsed)):
-                    # print ('sending data every 5 seconds!')
-                    # print ('time elapsed is: ', time_elapsed)
-                    # print ('modulo coparison is: ', (int(time_elapsed)%5)==0)
                     dataObjectConstruction=dataObjectToSend.JSON_format(car_direction, power, gpiozero.CPUTemperature().temperature, round(px.ultrasonic.read(), 2))
                     encoded_data_for_sendall=json.dumps(dataObjectConstruction)
                     s.send(encoded_data_for_sendall)
-                    # print ('data sent is: ', encoded_data_for_sendall)
                     bluetooth_time_snapshot=int(time_elapsed)+5
-                    # print ('time sanity check: ', int(time_elapsed), time_snapshot)
 
         except Exception as e:
             print (e)
             break 
 
-
+#main wifi thread for controlling the wifi communication, the running thread, and car movement
 def wifi_thread():
     global s_wifi, client, wifi_thread_telemetry_thread_run
     print ('thread running for wifi')
+
+    #main setup for wifi communication between devices
     HOST = "192.168.1.7" # IP address of your Raspberry PI
     PORT = 65432          # Port to listen on (non-privileged ports are > 1023)
     socket.socket(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -186,30 +131,18 @@ def wifi_thread():
     s_wifi.listen()
     client, clientInfo = s_wifi.accept()
     active_binding_status:bool=True;
+
+    #main loop for wifi_thread
     try:
+        #t4 is video streaming thread directly from the car, needs to be started after the initial init above
         t4.start()
         while active_binding_status==True:
             global car_direction, power, bluetooth_time_snapshot, wifi_time_snapshot
-            # print ('wifi main while loop running')
-            # print("server recv from: ", clientInfo)
             if (client!=None):
-                data = client.recv(1024)      # receive 1024 Bytes of message in binary format
+                data = client.recv(1024) # receive 1024 Bytes of message in binary format
 
-            # if (data == b"start telemetry" and data!= b"stop telemetry"):
-            #     #send telemetry data via wifi
-            #     dataObjectConstruction=dataObjectToSend.JSON_format(gpiozero.CPUTemperature().temperature, round(px.ultrasonic.read(), 2))                
-            #     encoded_data_for_sendall=json.dumps(dataObjectConstruction).encode()
-            #     client.sendall(encoded_data_for_sendall)
-
-            # if (data == b"start camera"):
-            #     Vilib.camera_start(vflip=False,hflip=False)
-            #     Vilib.display(local=False,web=True)
-
-            # if (data==b"stop camera"):
-            #     Vilib.camera_close()
-
+            #main data logic to control movement of the car
             if data != b"":
-                # print(data);
                 if data==b"88":
                     power=0
                     px.set_dir_servo_angle(0);
@@ -269,40 +202,24 @@ def wifi_thread():
         client.close()
         s_wifi.close()
 
+#thread dedicated to control telemetry communication between server and client
 def wifi_thread_telemetry():
+    #telemetry data init
     active_binding_status:bool=True;
     CPU_temp=gpiozero.CPUTemperature().temperature;
-    ultrasonic_distance=round(px.ultrasonic.read(), 2)
-    # dataObjectToSend= dataObject(car_direction, power, CPU_temp, ultrasonic_distance)    
+    ultrasonic_distance=round(px.ultrasonic.read(), 2)  
     dataObjectToSend=dataObject();
     print('wifi_thread for telemetry running')
-    # try:
-    #     while active_binding_status==True:
-    #         # print ('wifi main while loop running')
-    #         # print("server recv from: ", clientInfo)
-    #         data = client.recv(1024)      # receive 1024 Bytes of message in binary format
 
-    #         if (data == b"start telemetry" and data!= b"stop telemetry"):
-    #             #send telemetry data via wifi
-    #             dataObjectConstruction=dataObjectToSend.JSON_format(gpiozero.CPUTemperature().temperature, round(px.ultrasonic.read(), 2))                
-    #             encoded_data_for_sendall=json.dumps(dataObjectConstruction).encode()
-    #             client.sendall(encoded_data_for_sendall)
+    #main while loop to control if the server sending data or not to the client
     while (True):
         try:
             global wifi_thread_telemetry_thread_run, wifi_time_snapshot, car_direction, power
             current_time = monotonic_ns()
             time_elapsed=(current_time-start_time)/1000000000
-            # print (int(time_elapsed))
-            # print (time_snapshot)
-            # print (time_elapsed%5)
-            # print ('before time comparison is: ', int(time_elapsed)%5)
-            # if (bluetooth_thread_telemetry_thread_run==False):
-                # s.send('telemetry stopped, type start telemetry to enable')
-                # break;
-            # print ('t3 running')
+
+            #if telemetry turned on and client connected, send data every 3 seconds
             if (wifi_thread_telemetry_thread_run==True and client!=None):
-                # print ('wifi telemetry running')
-                # print ('t3 switch is true')
                 if (wifi_time_snapshot==-1):
                     dataObjectConstruction=dataObjectToSend.JSON_format(car_direction, power,gpiozero.CPUTemperature().temperature, round(px.ultrasonic.read(), 2))
                     encoded_data_for_sendall=json.dumps(dataObjectConstruction).encode()
@@ -311,17 +228,14 @@ def wifi_thread_telemetry():
                     wifi_time_snapshot=int(time_elapsed)+3
 
                 if (wifi_time_snapshot==int(time_elapsed)):
-                    # print ('sending data every 5 seconds!')
-                    # print ('time elapsed is: ', time_elapsed)
-                    # print ('modulo coparison is: ', (int(time_elapsed)%5)==0)
                     dataObjectConstruction=dataObjectToSend.JSON_format(car_direction, power,gpiozero.CPUTemperature().temperature, round(px.ultrasonic.read(), 2))
                     encoded_data_for_sendall=json.dumps(dataObjectConstruction).encode()
                     client.sendall(encoded_data_for_sendall)
                     print ('data sent is: ', encoded_data_for_sendall)
                     wifi_time_snapshot=int(time_elapsed)+3
-                    # print ('time sanity check: ', int(time_elapsed), time_snapshot)
 
-            if (wifi_thread_telemetry_thread_run==False):
+            #if telemetry turned off and client connected, send all default zero data to client
+            if (wifi_thread_telemetry_thread_run==False and client!=None):
                 dataObjectConstruction=dataObjectToSend.JSON_format('stop',0,0,0)
                 encoded_data_for_sendall=json.dumps(dataObjectConstruction).encode()
                 client.sendall(encoded_data_for_sendall)
@@ -335,13 +249,7 @@ def wifi_thread_telemetry():
             client.close()
             s_wifi.close()
 
-        # finally:
-        #     print("Closing socket, program exited correctly")
-        #     px.stop();
-        #     client.sendall(b'closing connection from host')
-        #     client.close()
-        #     s_wifi.close()
-    
+#main thread to start video streaming from the car
 def wifi_thread_camera():
     try:
         Vilib.camera_start(vflip=False,hflip=False)
@@ -351,15 +259,22 @@ def wifi_thread_camera():
         Vilib.camera_close()
 
 
+#main loop that run the thread
 if __name__ =="__main__":
     try:
+        #t1 is the thread to control bluetooth processes
+        #t2 is the thread to control wifi processes
+        #t3 is the thread to control bluetooth telemetry
+        #t3 is the thread to control wifi telemetry
+        #t5 is the thread to control camera video streaming processes
+
         t1 = threading.Thread(target=bluetooth_thread,)
         t2 = threading.Thread(target=wifi_thread,)
         t3 = threading.Thread(target=bluetooth_thread_telemetry,)
         t4 = threading.Thread(target=wifi_thread_telemetry,)
         t5 = threading.Thread(target=wifi_thread_camera,)
 
-
+        #t5 being started first because it takes time to boot up
         t5.start()
         t1.start()
         t2.start()
@@ -374,3 +289,4 @@ if __name__ =="__main__":
     except:
         print ('both thread 1+ thread 2 +thread 3 completed running')
         print ('closing program')
+        sys.exit()
