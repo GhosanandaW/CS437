@@ -23,12 +23,18 @@
         <source src="samplevid.mp4" type="video/mp4">
           Your browser does not support the video tag.
       </video> -->
-      <img src="./media/default_background.png" id='pics'>
+      <!-- <img src="./media/default_background.png" id='pics'> -->
+      <!-- <video src="http://192.168.1.7:9000/mjpg" autoplay="autoplay"></video> -->
+       <!-- <video id="video_streaming" autoplay="autoplay" src="http://192.168.1.7:9000/mjpg"> </video> -->
+        <span id="video_streaming">
+          <img style="display: block;-webkit-user-select: none;margin: auto;background-color: hsl(0, 0%, 25%);" src="http://192.168.1.7:9000/mjpg" width="640" height="480">
+
+        </span>
     </div> 
   
   </div>
 
-  <div class="row">
+  <div class="row" id="arrows">
     <div class="container">
         <div class="jumbotron text-center col-md-6">
             <span>&nbsp;&nbsp;</span> 
@@ -43,8 +49,8 @@
         </div>
 
         <div class="jumbotron text-left col-md-6">
-        <input id="message" type="text" placeholder="Message to Pi"/>
-        <button class="btn btn-success" onclick="update_data()">Submit</button>
+        <input id="message" type="text" placeholder="Message to Pi" oninput="disableArrows()"/>
+        <button class="btn btn-success" onclick="update_data(document.getElementById('message').value)">Submit</button>
           <p>
             <span id="direction_dot" style="color:Green">&bull;</span> Car Direction: <span id="direction"> </span>
            <br>
@@ -56,7 +62,7 @@
            <br>
            <span id="ultrasonic_dot" style="color:green">&bull;</span> Ultrasonic reading: <span id="ultrasonic">0.0</span>
            <br>
-           Bluetooth return value: <p id="bluetooth">0.0</p>
+           <!-- Bluetooth return value: <p id="bluetooth">0.0</p> -->
           </p>  
         </div>
     </div>
