@@ -10,8 +10,8 @@ function createWindow () {
     webPreferences: {
       nodeIntegration: true,
       preload: path.join(__dirname, 'preload.js'),
-      webSecurity: false,
-      csp: 'default-src \'self\' \'unsafe-inline\''
+      webSecurity: false, //tech debt, needs to be changed to https and turned true
+      csp: 'default-src \'self\' \'unsafe-inline\'' 
     }
   })
 
