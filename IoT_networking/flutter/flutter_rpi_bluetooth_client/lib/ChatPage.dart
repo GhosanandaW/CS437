@@ -241,10 +241,16 @@ class _ChatPage extends State<ChatPage> {
     // String dataString = String.fromCharCodes(buffer);
     // int index = buffer.indexOf(13);
     var dataUTF= utf8.decode(data);
+    var finalString='placeholder';
+    if (dataUTF.substring(0,1)=='{'){
     Map<String, dynamic> map = jsonDecode(dataUTF);
+    var car_direction = map['car_direction'].toString();
+    var speed = map['power'].toString();
     var CPU_temp = map['CPU_temp'].toString();
     var ultrasonic_distance = map['ultrasonic_distance'].toString();
-    var finalString='CPU_temp is: '+CPU_temp+'\n\n'+'ultrasonic_distance is: '+ultrasonic_distance;
+    finalString='car direction is: '+car_direction+'\n\n'+'speed is: '+speed+'\n\n'+'CPU_temp is: '+CPU_temp+'\n\n'+'ultrasonic_distance is: '+ultrasonic_distance;
+    }
+    else finalString=dataUTF.toString();
 
     if (dataUTF!=null) {
       setState(() {
