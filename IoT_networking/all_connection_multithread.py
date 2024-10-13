@@ -308,7 +308,7 @@ def wifi_thread_telemetry():
                     encoded_data_for_sendall=json.dumps(dataObjectConstruction).encode()
                     client.sendall(encoded_data_for_sendall)
                     print ('data sent is: ', encoded_data_for_sendall)
-                    wifi_time_snapshot=int(time_elapsed)+5
+                    wifi_time_snapshot=int(time_elapsed)+3
 
                 if (wifi_time_snapshot==int(time_elapsed)):
                     # print ('sending data every 5 seconds!')
@@ -318,14 +318,13 @@ def wifi_thread_telemetry():
                     encoded_data_for_sendall=json.dumps(dataObjectConstruction).encode()
                     client.sendall(encoded_data_for_sendall)
                     print ('data sent is: ', encoded_data_for_sendall)
-                    wifi_time_snapshot=int(time_elapsed)+5
+                    wifi_time_snapshot=int(time_elapsed)+3
                     # print ('time sanity check: ', int(time_elapsed), time_snapshot)
 
             if (wifi_thread_telemetry_thread_run==False):
                 dataObjectConstruction=dataObjectToSend.JSON_format('stop',0,0,0)
                 encoded_data_for_sendall=json.dumps(dataObjectConstruction).encode()
                 client.sendall(encoded_data_for_sendall)
-                print ('data sent is: ', encoded_data_for_sendall)
                 wifi_time_snapshot=-1
             
         except Exception as e: 
