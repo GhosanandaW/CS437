@@ -1,5 +1,5 @@
-var server_port = 65432;
-var server_addr = "192.168.1.9";   // the IP address of your Raspberry PI
+var server_port = X;
+var server_addr = "X.X.X.X";   // the IP address of your Raspberry PI
 
 function client(){
     

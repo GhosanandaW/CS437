@@ -3,9 +3,9 @@ document.onkeyup = resetKey;
 
 var net
 var client
-var server_port = 65432;
-var server_addr = "192.168.1.7";   // the IP address of your Raspberry PI
-var server_addr_vamera="192.168.1.7:9000/mjpg";
+var server_port = X;
+var server_addr = "X.X.X.X";
+var server_addr_vamera="X.X.X.X:X/mjpg";
 
 
 window.onload=function clientConnect() {
