@@ -163,3 +163,5 @@ cython_debug/
 
 cred.yaml
 node_modules/
+*node_modules
+*.next
