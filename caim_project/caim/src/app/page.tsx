@@ -1,7 +1,8 @@
 import React from 'react'
 
 
-const HomePage = () => {
+
+const page = () => {
   return (
     <div className='container-fluid p-3'>
       <div className='row'>
@@ -13,4 +14,4 @@ const HomePage = () => {
   )
 }
 
-export default HomePage
+export default page

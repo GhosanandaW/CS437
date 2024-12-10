@@ -3,10 +3,9 @@ import { NavigationType } from './types'
 import Link from 'next/link'
 
 const navigation: NavigationType[] = [
-  { name: "Home", href: "#", id: 1 },
-  { name: "Unknown faces", href: "#", id: 2 },
-  { name: "Known faces", href: "#", id: 3 },
-  { name: "About", href: "#", id: 4 },
+  { name: "Home", href: "/", id: 1 },
+  { name: "Face Library", href: "/facelibrary", id: 2 },
+  { name: "About", href: "/about", id: 3 },
 
 ]
 
