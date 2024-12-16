@@ -16,9 +16,9 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "cAIm",
+  title: "cAIms",
   description: "Camera with AI in the Middle",
-  keywords: "AI, Camera"
+  keywords: "AI, Camera, Monitoring System"
 };
 
 export default function RootLayout({

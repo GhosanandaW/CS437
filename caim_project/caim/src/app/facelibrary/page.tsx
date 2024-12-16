@@ -1,30 +1,14 @@
 'use client';
 import React from 'react';
-// import { DefaultAzureCredential } from "@azure/identity";
 import { InteractiveBrowserCredential } from "@azure/identity";
 import { BlobServiceClient, generateBlobSASQueryParameters, ContainerClient, BlobClient, StorageSharedKeyCredential, BlobSASPermissions } from "@azure/storage-blob";
 
 async function uploadImageToAzure(imageFile: any) {
-  // // Replace with your Azure Storage connection string
-  // const connectionString = 'YOUR_AZURE_STORAGE_CONNECTION_STRING';
-
-  // // Create BlobServiceClient
-  // const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
-
-  // Create a DefaultAzureCredential object
-  // const credential = new DefaultAzureCredential();
-
   const pictureName=document.getElementById("pictureName").value;
   const credential = new InteractiveBrowserCredential({
     tenantId: "",
     clientId: ""
   });
-
-  // Create BlobServiceClient using the credential
-  // const blobServiceClient = new BlobServiceClient(
-  //   "https://kv-alarm-codes.vault.azure.net/",
-  //   credential
-  // );
 
   const blobServiceClient = new BlobServiceClient(
     "https://adlalarmdata.blob.core.windows.net/",
@@ -86,53 +70,6 @@ async function downloadAllFromStorage() {
     }
   }
 
-  // // Get a list of blobs in the container 
-  // const blobs = containerClient.listBlobsFlat();
-  // console.log('blobs are:', blobs)
-  // console.log("next function:", blobs.next);
-  // console.log("byPage function:", blobs.byPage());
-  // console.log("next function source code:", blobs.next.toString());
-  // // console.log ('blobs .bypage are:', blobs.byPage())
-  // // Loop through each blob and generate the download URL 
-  // for await (const blob of blobs) { 
-  //   console.log('blob is: ', blob.name);
-  //   const blobClient = containerClient.getBlobClient(blob.name); 
-  //   await blobClient.downloadToFile("C:/Users/ghosa/Downloads/"+blob.name);
-  //   // // Define SAS options 
-  //   // const sasUrl = await blobClient.generateSasUrl({ 
-  //   //   permissions: Storage.BlobSASPermissions.parse("r"), // Read permissions 
-  //   //   expiresOn: new Date(new Date().valueOf() + 3600 * 1000) // 1 hour from now
-  //   // })
-  //   //   window.location.href = sasUrl;
-  // }
-
-  // const blobClient = containerClient.getBlobClient('image-1733912021870.jpg');
-  // // console.log(await blobClient.downloadToFile("C:\\Users\\ghosa\\Downloads\\blobDownloadTest"))
-  // // await blobClient.downloadToFile("C:/Users/ghosa/Downloads/blobDownloadTest")
-  // // window.location.href = url
-  // const downloadBlockBlobResponse = await blobClient.download();
-  // if (downloadBlockBlobResponse) { 
-  //   // const downloaded = await blobToString(await downloadBlockBlobResponse.blobBody);
-  //   // console.log(
-  //   //   "Downloaded blob content",
-  //   //   downloaded
-  //   // );
-  //   const blob = await downloadBlockBlobResponse.blobBody;
-  //   const downloadableUrl = URL.createObjectURL(blob);
-  //   // Download using a hidden anchor tag (more browser-compatible)
-  //   const hiddenLink = document.createElement('a');
-  //   hiddenLink.href = downloadableUrl;
-  //   hiddenLink.download = 'knownFace.jpg';
-  //   document.body.appendChild(hiddenLink);
-  //   hiddenLink.click();
-  //   document.body.removeChild(hiddenLink);
-
-  //   URL.revokeObjectURL(downloadableUrl);
-  // } else {
-  //   console.error("Error downloading blob!");
-  // }
-
-
 }
 
 async function blobToString(blob: Blob): Promise<string> {
@@ -146,30 +83,7 @@ async function blobToString(blob: Blob): Promise<string> {
   });
 }
 
-function showPicture() {
-  return (
-    <div><img height={400} width={600} src='https://www.idahostatesman.com/latest-news/w4ojx5/picture277864073/alternates/FREE_1140/0801%2006%20state%20street%20crashes.jpg' ></img></div>
-  )
-}
-
-
 const facelibrary = () => {
-  // const handleUpload = () => {
-  //   const fileInput = document.getElementById('file') as HTMLInputElement;
-  //   const files = fileInput.files;
-
-  //   if (files && files.length > 0) {
-  //     const filename = files[0].name;
-  //     uploadPicture(filename);
-  //   } else {
-  //     console.error('No file selected.');
-  //     // You might want to display an error message to the user here
-  //   }
-  // };
-  // const uploadPicture = (fileName: string) => {
-  //   console.log('Uploading picture, ' + fileName);
-  //   // Your actual upload logic here, using the filename
-  // }
   return (
     <div className="container-fluid p-3">
       <label htmlFor="file" className='mb-2'>Upload picture here!</label>
@@ -219,5 +133,3 @@ const facelibrary = () => {
 };
 
 export default facelibrary;
-
-

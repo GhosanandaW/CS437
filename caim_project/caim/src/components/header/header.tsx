@@ -17,7 +17,7 @@ const header = () => {
       <div className='container'>
         <div className='row d-flex align-items-center justify-content-center'>
           <div className='col-auto text-center'>
-            <h2 className='text-blue-500 mb-0'>cAIm</h2>
+            <h2 className='text-blue-500 mb-0'>cAIms</h2>
             <p className='text-xs mt-0'>Camera with AI in the Middle</p>
           </div>
           <div className='col-auto'>
